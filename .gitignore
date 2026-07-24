@@ -1,0 +1,11 @@
+# 실행 산출물 (로그·상태) — 커밋하지 않음
+data/
+*.log
+window-status.txt
+
+# 혹시 모를 자격증명·개인 파일
+.smtp.conf
+*.plist
+
+# macOS
+.DS_Store
