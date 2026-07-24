@@ -1,4 +1,4 @@
-# claude-morning
+# claude-5h-warmer
 
 Claude **구독**의 "5시간 사용 창"을 원하는 시각에 자동으로 열어두는 작은 도구.
 정해진 시각마다 아주 짧은 핑을 보내 창을 열고, 실제 창 상태(리셋 시각·사용률)를 기록한다.
@@ -9,22 +9,26 @@ Claude **구독**의 "5시간 사용 창"을 원하는 시각에 자동으로 �
 - **5시간 간격**으로 핑을 두면 창이 끊기지 않고 이어진다.
   예) `06:00 → 11:00 → 16:00` = 오전 6시 ~ 밤 9시 연속 커버.
 
-## 요구사항
-- **macOS** (스케줄러로 launchd 사용)
-- Claude Code CLI + **구독 계정 로그인** 상태
-  - `claude` 가 PATH 에 있거나 `~/.local/bin/claude`, 또는 VSCode 확장 번들 바이너리 중 하나면 자동 인식.
-  - ⚠️ **API 키로 쓰면 안 된다.** API 키(`ANTHROPIC_API_KEY`)로 나가면 과금이 구독과 분리돼 5시간 창이 **안** 열린다. 스크립트가 API 키 환경변수를 자동으로 제거하지만, 애초에 `claude` 가 **구독으로 로그인**돼 있어야 한다.
+## 설치 방법
 
-## 빠른 시작
+### A) 각자의 Claude Code로 (가장 쉬움, 추천)
+👉 **[SETUP.md](SETUP.md)** 의 프롬프트를 본인 Claude Code에 붙여넣으면 끝.
+OS 감지·시각 설정·설치·검증까지 Claude Code가 알아서 해준다. OS/시간이 사람마다 달라도 OK.
+
+### B) 수동 (macOS)
 ```bash
-git clone <repo-url> claude-morning
-cd claude-morning
 $EDITOR config.sh        # 1) 시각/모델을 취향대로 수정
 ./install.sh             # 2) 설치 (launchd 등록)
 # 3) (선택) 지금 바로 한 번 테스트
 launchctl kickstart -k gui/$(id -u)/com.claude-morning
 cat data/window-status.txt
 ```
+
+## 요구사항
+- Claude Code CLI + **구독 계정 로그인** 상태
+  - `claude` 가 PATH 에 있거나 `~/.local/bin/claude`, 또는 VSCode 확장 번들 바이너리 중 하나면 자동 인식.
+  - ⚠️ **API 키로 쓰면 안 된다.** API 키(`ANTHROPIC_API_KEY`)로 나가면 과금이 구독과 분리돼 5시간 창이 **안** 열린다. 스크립트가 API 키 환경변수를 자동으로 제거하지만, 애초에 `claude` 가 **구독으로 로그인**돼 있어야 한다.
+- 수동 설치(B)의 `install.sh` 는 **macOS(launchd)** 전용. Linux/Windows 는 방법 A(Claude Code)를 쓰거나 아래 스케줄러 안내를 참고.
 
 ## 설정 — `config.sh`
 | 변수 | 설명 | 예시 |
@@ -52,17 +56,18 @@ cat data/window-status.txt
 
 ## 구성 파일
 - `morning-run.sh` — 핑 1회 + 창 상태 기록. 상주 프로세스 없음(실행 시 몇 초만).
-- `install.sh` — `config.sh` 를 읽어 LaunchAgent plist 생성 후 등록.
+- `install.sh` — `config.sh` 를 읽어 LaunchAgent plist 생성 후 등록(macOS).
 - `uninstall.sh` — 등록 해제 + plist 삭제 (로그는 보존).
+- `SETUP.md` — 각자의 Claude Code로 설치하는 붙여넣기 프롬프트.
 
 ## 주의사항
 - 트리거 시각에 **절전**이면 깨어날 때 실행된다. 하지만 **완전히 전원이 꺼져** 있으면 그 슬롯은 건너뛴다.
 - 시각은 **머신의 로컬 시간대** 기준.
-- 컴퓨터 부담은 무시 가능: 유휴 시 0(데몬 아님), 실행당 몇 초·CPU 1초 미만·메모리 순간 ~300MB 사용 후 즉시 회수. 진짜 비용은 하드웨어가 아니라 구독 쿼터를 조금 쓰는 것(=의도된 동작).
+- 컴퓨터 부담은 무시 가능: 유휴 시 0(데몬 아님), 실행당 몇 초·CPU 1초 미만·메모리 순간 ~300MB 사용 후 즉시 회수. 진짜 비용은 하드웨어가 아니라 구독 쿼터를 조금 쓰는 것(= 의도된 동작).
 
-## Linux (참고 · 미검증)
+## Linux (참고)
 `install.sh` 는 macOS 전용이지만 `morning-run.sh` 자체는 Linux 에서도 동작한다(시간 변환 처리 포함).
 cron 예시:
 ```cron
-0 6,11,16 * * 1-5 /path/to/claude-morning/morning-run.sh
+0 6,11,16 * * 1-5 /path/to/claude-5h-warmer/morning-run.sh
 ```
